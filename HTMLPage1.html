@@ -6,7 +6,45 @@
     <title>TSSV</title>
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/themes/mint-choc/jquery-ui.css" />
     <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-    <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
+    <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>    
+    <script type="text/javascript">  	
+        //For the Background Image
+        $(document).ready(function () {
+
+            var bgImage = $('#background-image');
+
+            function resizeImg() {
+                var imgwidth = bgImage.width(),
+                     imgheight = bgImage.height(),
+                     winwidth = $(window).width(),
+                     winheight = $(window).height(),
+                     widthratio = winwidth / imgwidth,
+                     heightratio = winheight / imgheight,
+                     widthdiff = heightratio * imgwidth,
+                     heightdiff = widthratio * imgheight;
+
+                if (heightdiff > winheight) {
+                    bgImage.css({
+                        width: winwidth + 'px',
+                        height: heightdiff + 'px'
+                    });
+                } else {
+                    bgImage.css({
+                        width: widthdiff + 'px',
+                        height: winheight + 'px'
+                    });
+                }
+
+                $("#background-image").show();
+
+            }
+            resizeImg();
+            $(window).resize(function () {
+                resizeImg();
+            });
+
+        });
+	</script>
 
     <script type="text/javascript">
         //The Main Function, executed when the document is ready
@@ -29,6 +67,10 @@
                 removeUnnecessaryWidgets();
             });
 
+            $("#button_createTest").button().click(function () {
+                removeUnnecessaryWidgets();
+            });
+
             $("#button_aboutUs").button().click(function () {
                 removeUnnecessaryWidgets();
                 $("#div_ajaxFiller").hide();
@@ -46,6 +88,13 @@
                 $("#div_ajaxFiller").load("./ServerScripts/LoginScripts/Login_Form.php");
                 $("#div_ajaxFiller").slideDown(1000);
             });
+
+            $("#button_debug").button().click(function () {
+                removeUnnecessaryWidgets();
+                $("#div_ajaxFiller").hide();
+                $("#div_ajaxFiller").load("./ServerScripts/DebugScripts/Debug.php");
+                $("#div_ajaxFiller").slideDown(1000);
+            });
         }
 
 
@@ -53,6 +102,7 @@
         {
             $("#div_loginStatus").remove();
             $("#div_loginDialog").remove();
+            $(".class_divs_aboutUs").remove();
         }
 
     </script>
@@ -62,27 +112,39 @@
             height: 33px;
             width: 116px;
         }
+        #background-image{
+            position:absolute;
+            top:0;
+            left:0;
+            z-index:-10;
+            overflow: hidden;
+            width: 100%;
+            display:none;
+        }
     </style>
 
 </head>
 
-<body>
-    <div style="text-align: center;">
-
+<body>      
+    <img id="background-image" src="./lib/Future_Website_Background.jpg" />  
+    
+    <div style="text-align: center;">                
         <div id="div_mainMenu">
             <input id="button_home" class="TopMenuButtons" style="width: 10%" type="button" value="Home"/>
             <input id="button_testYourself" class="TopMenuButtons" style="width: 10%" type="button" value="Test Yourself"/>
+            <input id="button_createTest" class="TopMenuButtons" style="width: 10%" type="button" value="Create Test"/>
             <input id="button_aboutUs" class="TopMenuButtons" style="width: 10%" type="button" value="About Us"/>
             <input id="button_login" class="TopMenuButtons" style="width: 10%" type="button" value="Login"/>
-            <input id="button_support" class="TopMenuButtons" style="width: 10%" type="button" value="Support"/>
-            
+            <input id="button_support" class="TopMenuButtons" style="width: 10%" type="button" value="Support"/>                
+            <input id="button_debug" class="TopMenuButtons" style="width: 10%" type="button" value="Debug"/>           
         </div>
-
+        
 
         <div id="div_ajaxFiller">
             PlaceHolder for code that will be retrieved from PHP scripts through AJAX
         </div>
 
     </div>
+    
 </body>
 </html>

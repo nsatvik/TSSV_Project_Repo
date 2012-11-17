@@ -18,11 +18,11 @@
 
 <br /><br /><br /><br /><br />
 
-<div style="width: 383px; float: left; height: 497px;">
+<div class="class_divs_aboutUs" style="width: 383px; float: left; height: 497px;">
     <img src="http://www.thepickards.co.uk/images/pirate63.gif" style="height: 400px;"/>
 </div>
 
-<div id="div_aboutUs" style="text-align: center; float: none; height: 700px;">
+<div id="div_aboutUs" class="class_divs_aboutUs" style="text-align: center; float: none; height: 700px;">
 
     <h3>Section 1</h3>
     <div>
