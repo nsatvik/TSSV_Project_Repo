@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/themes/mint-choc/jquery-ui.css" />
     <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
     <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>    
+    <script src="./lib/jquery.dataTables.js"></script>
+
+    <style type="text/css" title="currentStyle">			      
+			@import "./lib/DataTableCSS/Table_Style.css";
+	</style>
+
     <script type="text/javascript">  	
         //For the Background Image
         $(document).ready(function () {
@@ -72,10 +78,8 @@
             });
 
             $("#button_aboutUs").button().click(function () {
-                removeUnnecessaryWidgets();
-                $("#div_ajaxFiller").hide();
-                $("#div_ajaxFiller").load("./ServerScripts/AboutUsScripts/About_Us.php");
-                $("#div_ajaxFiller").slideDown(1000);                
+                removeUnnecessaryWidgets();                
+                $("#div_ajaxFiller").load("./ServerScripts/AboutUsScripts/About_Us.php");                
             });
 
             $("#button_support").button().click(function () {
@@ -84,25 +88,24 @@
 
             $("#button_login").button().click(function () {
                 removeUnnecessaryWidgets();
-                $("#div_ajaxFiller").hide();                
-                $("#div_ajaxFiller").load("./ServerScripts/LoginScripts/Login_Form.php");
-                $("#div_ajaxFiller").slideDown(1000);
+                $("#div_ajaxFiller").load("./ServerScripts/LoginScripts/Login_Form.php");                
             });
 
             $("#button_debug").button().click(function () {
-                removeUnnecessaryWidgets();
-                $("#div_ajaxFiller").hide();
-                $("#div_ajaxFiller").load("./ServerScripts/DebugScripts/Debug.php");
-                $("#div_ajaxFiller").slideDown(1000);
+                removeUnnecessaryWidgets();                
+                $("#div_ajaxFiller").load("./ServerScripts/DebugScripts/Debug.php");                
+            });
+
+            $("#button_statistics").button().click(function () {
+                removeUnnecessaryWidgets();                
+                $("#div_ajaxFiller").load("./ServerScripts/StatisticsScripts/RetrieveCourseScript.php");                
             });
         }
 
 
         function removeUnnecessaryWidgets()
         {
-            $("#div_loginStatus").remove();
-            $("#div_loginDialog").remove();
-            $(".class_divs_aboutUs").remove();
+            $("#div_ajaxFiller").empty();
         }
 
     </script>
@@ -137,11 +140,19 @@
             <input id="button_login" class="TopMenuButtons" style="width: 10%" type="button" value="Login"/>
             <input id="button_support" class="TopMenuButtons" style="width: 10%" type="button" value="Support"/>                
             <input id="button_debug" class="TopMenuButtons" style="width: 10%" type="button" value="Debug"/>           
+            <input id="button_statistics" class="TopMenuButtons" style="width: 10%" type="button" value="Statistics"/>           
         </div>
         
 
         <div id="div_ajaxFiller">
             PlaceHolder for code that will be retrieved from PHP scripts through AJAX
+            <br />
+            <br />
+            <img src="http://www.shitalshah.com?$ (x+a)^n=\sum_{k=0}^n   {n \choose k} x^k a^{n-k} $">
+            <br />
+            (x+a)^n=∑_(k=0)^n            
+            <br />
+            (x+a)^n=\sum_{k=0}^n   {n \choose k} x^k a^{n-k}
         </div>
 
     </div>
