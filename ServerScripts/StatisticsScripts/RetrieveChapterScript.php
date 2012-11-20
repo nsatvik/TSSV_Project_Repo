@@ -9,12 +9,12 @@
     //Define classes here
     class FormValues
     {        
-        private $courseID;
+        private $unitID;
         private $conn;
         
         function __construct()
         {        
-            $this->courseID = $_POST['courseID'];
+            $this->unitID = $_POST['unitID'];
             
             $this->conn = new SQL("localhost", "root", "");
             $this->conn->setDatabase("questions_db");
@@ -22,28 +22,29 @@
         
         function displayValues()
         {
-            echo "Course ID = " . $this->courseID;
+            echo "Unit ID = " . $this->unitID;
         }
         
-        function getSubjectTuples()
+        function getChapterTuples()
         {   
-            $query = "select S.id, S.name
-                      from RegisteredCourse R, Subject S
-                      where R.studentId = 'BASE12S1015' and R.courseId = S.courseId and R.courseId = '{$this->courseID}'";
+            $query = "select C.id, C.name
+                        from RegisteredCourse R, Subject S, Unit U, Chapter C
+                        where R.studentId = 'BASE12S1015' and R.courseId = S.courseId and S.id = U.subjectId and U.id = C.unitId
+                        ";
             $result = $this->conn->query($query);
             return $result;
         }
         
         function constructTable()
         {            
-            $result = $this->getSubjectTuples();
+            $result = $this->getChapterTuples();
             $numRows = mysql_num_rows($result);         
             
-            $attributes = array("Subject_ID", "Subject_Name");
+            $attributes = array("Chapter_ID", "Chapter_Name");
             
             
             echo "<div style=\"float: left;\">";
-            echo "<table id=\"table_subjects\" border='1' style=\"text-align: center;\">";
+            echo "<table id=\"table_chapters\" border='1' style=\"text-align: center;\">";
             echo "<thead>";
             echo "<tr>";
             for($i = 0; $i < count($attributes); $i++)
@@ -71,16 +72,17 @@
                 echo "<td><input type=\"button\" id=\"button_{$row[0]}\" value=\"Select\"/></td>";
                 echo "<script type=\"text/javascript\">  
                         $(\"#button_{$row[0]}\").button().click(function(){
-                                $(\"#p_feedback\").text(\"Subject Selected --> \" + this.id.substring(7));
+                                $(\"#p_feedback\").text(\"Chapter Selected --> \" + this.id.substring(7));
                             
                                 $(\"#div_unitsAjaxFiller\").text(this.id);
-                                $(\"#hidden_subjectID\").val(this.id.substring(7));
+                                $(\"#hidden_chapterID\").val(this.id.substring(7));
                                                                 
                                 $(\"#div_subjectAjaxFiller\").empty();
-                                $(\"#div_subjectAjaxFiller\").load(\"./ServerScripts/StatisticsScripts/RetrieveUnitScript.php\", 
+                                $(\"#div_subjectAjaxFiller\").load(\"./ServerScripts/StatisticsScripts/RetrieveQuestionScript.php\", 
                                     {
-                                        \"subjectID\" : $(\"#hidden_subjectID\").val()            
-                                    });   
+                                        \"chapterID\" : $(\"#hidden_chapterID\").val()            
+                                    });
+                                
                             });; 
                       </script>";
               }          
@@ -92,9 +94,9 @@
             echo "</div>";           
         }
         
-        private function getCourseStatisticsTuples()
+        private function getUnitStatisticsTuples()
         {
-            $query = "select Course.id, count(QS.id) as numberOfQuestions,
+            $query = "select U.id, count(QS.id) as numberOfQuestions,
         				sum(QS.count_total) as numberOfStudents, 
         				sum(QS.count_correct) as c_numberStudents,
         				sum(QS.count_incorrect) as ic_numberStudents,
@@ -104,17 +106,16 @@
         				round(avg(QS.c_avgTime)) as c_avgTime, 
         				round(avg(QS.a_avgTime)) as a_avgTime
         				
-                        from QuestionStatistics QS, Question Q, Chapter, Unit U, Subject S, Course
-                        where QS.id = Q.id and Q.chapterId = Chapter.id and Chapter.unitId = U.id and U.subjectId = S.id and S.courseId = Course.id
-                                and Course.id = '{$this->courseID}'
-                        group by Course.id";
+                        from QuestionStatistics QS, Question Q, Chapter C, Unit U
+                        where QS.id = Q.id and Q.chapterId = C.id and C.unitId = U.id
+                        group by U.id;";
             $result = $this->conn->query($query);
             return $result;
         }
         
         function displayStatistics()
         {
-            $result = $this->getCourseStatisticsTuples();                   
+            $result = $this->getUnitStatisticsTuples();                   
             $numRows = mysql_num_rows($result);           //mysql_num_rows
             
             $attributes = array("id", "numQuestions", "numStudents", "c_numStudents", "ic_numStudents", "c_fraction", "ic_fraction", "avgSuggestedTime", "c_avgTime", "a_avgTime");
@@ -122,7 +123,7 @@
             
             echo "<div id=\"div_unitsAjaxFiller\" style=\"float: right; position:relative; left:0px; white-space:pre;overflow:auto;width:50%;padding:10px;\">
                         Placeholder for Units Table";                  
-            echo "<table id=\"table_courseStatistics\" border='1' style=\"\">";
+            echo "<table id=\"table_unitStatistics\" border='1' style=\"\">";
             echo "<thead>";
             echo "<tr>";
             for($i = 0; $i < count($attributes); $i++)
@@ -171,10 +172,10 @@
 ?>
 
 <style>
-    #table_courseStatistics {
+    #table_unitStatistics {
         table-layout:fixed;
     }
-    #table_courseStatistics td{
+    #table_unitStatistics td{
         overflow:hidden;
         text-overflow: elipsis;
     }
@@ -182,17 +183,17 @@
 
 
 <script type="text/javascript">    
-    $("#table_subjects").dataTable();
-    $("#table_subjects_previous").button();
-    $("#table_subjects_next").button();
+    $("#table_chapters").dataTable();
+    $("#table_chapters_previous").button();
+    $("#table_chapters_next").button();
     
-    $("#table_courseStatistics").dataTable({
+    $("#table_unitStatistics").dataTable({
         "sScrollX": "50%",
 		"sScrollXInner": "110%",
 		"bScrollCollapse": true       
     });   
-    $("#table_courseStatistics_previous").button();
-    $("#table_courseStatistics_next").button();   
+    $("#table_unitStatistics_previous").button();
+    $("#table_unitStatistics_next").button();   
 </script>
 
 

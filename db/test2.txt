@@ -1,0 +1,90 @@
+IEEE Communications Magazine • July 2012 0163-6804/12/$25.00 © 2012 IEEE 163
+INTRODUCTION
+IEEE 802.1aq Shortest Path Bridging (SPB) [1]
+is a singularly interesting networking technology.
+It is the application of contemporary compute
+power and a state of the art control plane to
+replace spanning tree protocols. In essence it is a
+combination of standard and proven components
+that have been specified by the IEEE with algorithms
+that construct connectivity based on the
+shortest paths. This is achieved while preserving
+key aspects of the Ethernet architecture. The
+basics of the technology have previously been
+discussed in this journal in [2] and [3].
+SPB takes advantage of key attributes of the
+design of Ethernet to permit the consolidation
+of a number of control protocols into the combination
+of a single link state routing protocol
+(IS-IS) [4] and enhanced algorithms for the computation
+of both unicast and multicast forwarding.
+One consequence of this consolidation is a
+radically simplified control plane with a significantly
+diminished messaging load. This becomes
+a virtuous circle as reducing the number of messages
+exchanged as an artifact of normal network
+operation diminishes the number of
+interruptions the control plane is required to
+handle when computing.
+Another key attribute of the Ethernet technology
+base is the concept of Virtual LAN
+(VLAN) as a vertical partition of the network.
+That is, each VLAN may comprise a different
+subset of the physical topology, and SPB ensures
+full connectivity on a shortest path within each
+VLAN. SPB does enable Ethernet to overcome
+the limitations of spanning trees and fully utilize
+much richer topologies. The combination of path
+computation, shortest path forwarding, and the
+use of VLANs opens up new possibilities in the
+efficient use of the breadth of connectivity within
+the bounds of the existing Ethernet technology
+base.
+THE PROBLEM SPACE
+SPB is expected to make efficient use of a variety
+of arbitrary networking topologies with an
+absolute minimum of operator intervention.
+These can range from sparse mesh or dual
+homed hub and spoke in the metro up to Clos
+or “fat tree” [5] architectures employed in the
+datacenter. Frequently, the offered load in the
+network will not match the topology or routing
+system, resulting in “hot spots”. Operators need
+the ability to shift load away from a hot spot.
+It is well understood that a single shortest
+path solution in the network will not make good
+utilization of a network, and is difficult to manipulate
+due to the sensitivity of shortest path forwarding
+to metric manipulation. This has led the
+industry to implement multi-path solutions.
+Most frequently deployed today is per hop
+Equal Cost Multipath (ECMP). In most implementations,
+when the presence of multiple equal
+cost next hops is encountered, the packet is
+inspected for a source of entropy (typically an IP
+header), and a hash of header information modulo
+the number of next hops is used to select the
+next hop for the particular packet. It will distribute
+load well in very regular topologies, but
+for asymmetric topologies or failure scenarios
+the distribution of load will be perturbed across
+the network as the load spreading view is based
+only on a view of the next hop and not the network
+beyond the next hop. Reactive measures to
+address hot spots are difficult as a multi-path
+design tends to “lock in” the metrics used; hence,
+shifting load off a specific link or node is not
+easily addressed. Further, ECMP frequently
+requires additional packet processing inherent to
+the next hop selection process. Finally. as far as
+Ethernet is concerned, this would be a significant
+change to existing implementations and a
+major architectural change as congruence of forward-
+backward and unicast-multicast forwarding
+would be lost, and data plane OAM [3] would
+require a significant re-design. The reason for
+this is that per-hop ECMP cannot be applied to
+multicast. So while ECMP preserves flow ordering
+for unicast, virtualized bridging utilizing a
+combination of unicast and multicast (for flood-
+ABSTRACT

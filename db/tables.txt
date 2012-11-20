@@ -1,0 +1,774 @@
+DELETE FROM Forum;
+DELETE FROM AnsweredQuestion;
+DELETE FROM Question;
+DELETE FROM Chapter;
+DELETE FROM Unit;
+DELETE FROM Subject;
+DELETE FROM RegisteredCourse;
+DELETE FROM Student;
+DELETE FROM Parent;
+DELETE FROM Course;
+DELETE FROM Staff;
+DELETE FROM Institution;
+
+
+DROP VIEW QuestionStatistics;
+DROP TABLE Forum;
+DROP VIEW User;
+DROP TABLE AnsweredQuestion;
+DROP TABLE Question;
+DROP TABLE Chapter;
+DROP TABLE Unit;
+DROP TABLE Subject;
+DROP TABLE RegisteredCourse;
+DROP TABLE Student;
+DROP TABLE Parent;
+DROP TABLE Course;
+DROP TABLE Staff;
+DROP TABLE Institution;
+
+
+
+CREATE TABLE Institution
+(
+    id char(5) PRIMARY KEY NOT NULL,
+    name varchar(50)
+);
+
+CREATE TABLE Staff
+(
+    id char(12) PRIMARY KEY NOT NULL,
+    password char(64),
+    name varchar(50),
+
+    institutionId char(5),
+    yearOfJoining char(2),    
+    accountType char,
+    staffId char(4),
+
+    mobile char(10),
+    email varchar(200),
+    DOB date,
+
+    FOREIGN KEY (institutionId) REFERENCES Institution(id)
+);
+
+CREATE TABLE Course
+(
+    id char(11) PRIMARY KEY NOT NULL,
+
+    institutionId char(5),
+    courseId char(5),
+
+    name varchar(50),
+ 
+    FOREIGN KEY (institutionId) REFERENCES Institution(id)
+);
+
+CREATE TABLE Parent
+(
+    id char(12) PRIMARY KEY NOT NULL,
+    password char(64),
+    name varchar(50),
+
+    mobile char(10),
+    email varchar(200)
+);
+
+CREATE TABLE Student
+(
+    id char(12) PRIMARY KEY NOT NULL,
+    password char(64),
+    name varchar(50),
+
+    institutionId char(5),
+    yearOfJoining char(2),    
+    accountType char,
+    studentId char(4),
+
+    mobile char(10),
+    email varchar(200),
+    DOB date,
+  
+    parentId char(12),
+    councellorId char(12),
+
+    FOREIGN KEY (institutionId) REFERENCES Institution(id),
+    FOREIGN KEY (parentId) REFERENCES Parent(id),
+    FOREIGN KEY (councellorId) REFERENCES Staff(id)
+);
+
+CREATE TABLE RegisteredCourse
+(
+    studentId char(12),
+    courseId char(11),
+
+    PRIMARY KEY (studentId, courseId),
+
+    FOREIGN KEY (studentId) REFERENCES Student(id),
+    FOREIGN KEY (courseId) REFERENCES Course(id)
+);
+
+CREATE TABLE Subject
+(
+    id char(15) PRIMARY KEY NOT NULL,
+
+    courseId char(11),
+    subjectId char(3),
+
+    name varchar(50),
+ 
+    FOREIGN KEY (courseId) REFERENCES Course(id)
+);
+
+CREATE TABLE Unit
+(
+    id char(19) PRIMARY KEY NOT NULL,
+
+    subjectId char(15), 
+    unitNumber char(3),
+
+    name varchar(50),
+
+    FOREIGN KEY (subjectId) REFERENCES Subject(id)
+);
+
+CREATE TABLE Chapter
+(
+    id char(23) PRIMARY KEY NOT NULL,
+
+    unitId char(19), 
+    chapterNumber char(3),
+
+    name varchar(50),
+
+    FOREIGN KEY (unitId) REFERENCES Unit(id)
+);
+
+CREATE TABLE Question
+(
+    id char(29) PRIMARY KEY NOT NULL,
+
+    chapterId char(23),
+    questionNumber char(5),
+
+    difficulty int,
+    answerType int,
+    questionType int,
+    suggestedTime int,
+    
+    staffId char(12),
+    uploadTime int,
+    copyright varchar(500),
+    
+    questionText varchar(2000),
+
+    optionText_1 varchar(2000),
+    optionText_2 varchar(2000),
+    optionText_3 varchar(2000),
+    optionText_4 varchar(2000),
+    optionText_5 varchar(2000),
+    answerText_1 boolean,
+    answerText_2 boolean,
+    answerText_3 boolean,
+    answerText_4 boolean,
+    answerText_5 boolean,
+
+    answer double,
+    answer_precision double,
+
+    explanation varchar(5000),
+    
+    FOREIGN KEY (chapterId) REFERENCES Chapter(id),
+    FOREIGN KEY (staffId) REFERENCES Staff(id)
+);
+
+CREATE TABLE AnsweredQuestion
+(
+    studentId char(12),
+    questionId char(29),
+
+    answerText_1 boolean,
+    answerText_2 boolean,
+    answerText_3 boolean,
+    answerText_4 boolean,
+    answerText_5 boolean,
+
+    answer double,
+
+    takenTime int,
+    downloadTime int,
+
+    PRIMARY KEY (studentId, questionId),
+
+    FOREIGN KEY (studentId) REFERENCES Student(id),
+    FOREIGN KEY (questionId) REFERENCES Question(id)
+);
+
+CREATE VIEW User AS
+    SELECT id FROM Student
+    UNION
+    SELECT id FROM Staff;
+
+CREATE TABLE Forum
+(
+    id char(34) PRIMARY KEY NOT NULL,
+
+    questionId char(29),
+    commentNumber char(4),
+
+    userId char(12),
+
+    text varchar(5000),
+
+    FOREIGN KEY (questionId) REFERENCES Question(id),
+    FOREIGN KEY (userId) REFERENCES User(id)
+);
+
+
+
+SELECT 'Institution' AS 'TableName', 4 AS 'Entered', COUNT(*) AS 'Accepted' FROM Institution UNION 
+SELECT 'Staff', 19, COUNT(*) FROM Staff UNION
+SELECT 'Course', 14, COUNT(*) FROM Course UNION
+SELECT 'Parent', 100, COUNT(*) FROM Parent UNION
+SELECT 'Student', 100, COUNT(*) FROM Student UNION
+SELECT 'RegisteredCourse', 100, COUNT(*) FROM RegisteredCourse UNION
+SELECT 'Subject', 6, COUNT(*) FROM Subject UNION
+SELECT 'Unit', 6, COUNT(*) FROM Unit UNION
+SELECT 'Chapter', 3, COUNT(*) FROM Chapter UNION
+SELECT 'Question', 5, COUNT(*) FROM Question UNION
+SELECT 'AnsweredQuestion', 14, COUNT(*) FROM AnsweredQuestion UNION
+SELECT 'Forum', 5, COUNT(*) FROM Forum;
+
+
+
+
+
+CREATE VIEW QuestionStatistics AS
+
+select distinct Q.id,
+	
+	(
+	select count(*)
+	from AnsweredQuestion A1
+	where A1.questionId = Q.id
+	)as count_total,
+
+	(
+	select count(*)
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and (A2.studentId, A2.questionId) in 
+			(
+			select A1.studentId, A1.questionId
+			from AnsweredQuestion A1, Question Q1
+			where A1.questionId = Q1.id
+					and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+					and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+					and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+					and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+					and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+			)
+	)as count_correct,
+
+	(
+	select count(*)
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and (A2.studentId, A2.questionId) not in 
+			(
+			select A1.studentId, A1.questionId
+			from AnsweredQuestion A1, Question Q1
+			where A1.questionId = Q1.id
+					and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+					and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+					and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+					and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+					and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+			)
+	)as count_incorrect,
+
+	Q.suggestedTime,
+	
+	(
+	select avg(A2.takenTime) as c_avgTime
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and
+			(A2.studentId, A2.questionId) in 
+				(
+					select A1.studentId, A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+	group by A2.questionId
+
+	UNION
+
+	select 0 as c_avgTime
+	from Question Q2
+	where Q2.id = Q.id and Q2.id not in 
+				(
+					select A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+		
+	)as c_avgTime,
+	
+	
+	(
+	select avg(A2.takenTime) as a_avgTime
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and A2.questionId in
+					(
+					select A1.questionId
+					from AnsweredQuestion A1
+					where A1.questionId = Q.id
+					)
+	group by A2.questionId
+
+	UNION
+
+	select 0 as a_avgTime
+	from Question Q2
+	where Q2.id = Q.id and Q2.id not in 
+					(
+					select A1.questionId
+					from AnsweredQuestion A1
+					where A1.questionId = Q.id
+					)
+	)as a_avgTime
+
+from Question Q
+;
+
+
+
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  List of Courses  ***
+
+select C.id, C.name
+from RegisteredCourse R, Course C
+where R.studentId = 'BASE12S1015' and R.courseId = C.id;
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  List of Subjects  ***
+
+select S.id, S.name
+from RegisteredCourse R, Subject S
+where R.studentId = 'BASE12S1015' and R.courseId = S.courseId;
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  List of Units  ***
+
+select U.id, U.name
+from RegisteredCourse R, Subject S, Unit U
+where R.studentId = 'BASE12S1015' and R.courseId = S.courseId and S.id = U.subjectId;
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  List of Chapters  ***
+
+select C.id, C.name
+from RegisteredCourse R, Subject S, Unit U, Chapter C
+where R.studentId = 'BASE12S1015' and R.courseId = S.courseId and S.id = U.subjectId and U.id = C.unitId;
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  Question Statistics - Course  ***
+
+select Course.id, count(QS.id) as numberOfQuestions,
+				sum(QS.count_total) as numberOfStudents, 
+				sum(QS.count_correct) as c_numberStudents,
+				sum(QS.count_incorrect) as ic_numberStudents,
+				round(avg(QS.count_correct/QS.count_total) * 100) as c_fraction, 
+				round(avg(QS.count_incorrect/QS.count_total) * 100) as ic_fraction, 
+				round(avg(QS.suggestedTime)) as avgSuggestedTime, 
+				round(avg(QS.c_avgTime)) as c_avgTime, 
+				round(avg(QS.a_avgTime)) as a_avgTime
+				
+from QuestionStatistics QS, Question Q, Chapter, Unit U, Subject S, Course
+where QS.id = Q.id and Q.chapterId = Chapter.id and Chapter.unitId = U.id and U.subjectId = S.id and S.courseId = Course.id
+group by Course.id;
+
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  Question Statistics - Subject  ***
+
+select S.id, count(QS.id) as numberOfQuestions,
+				sum(QS.count_total) as numberOfStudents, 
+				sum(QS.count_correct) as c_numberStudents,
+				sum(QS.count_incorrect) as ic_numberStudents,
+				round(avg(QS.count_correct/QS.count_total) * 100) as c_fraction, 
+				round(avg(QS.count_incorrect/QS.count_total) * 100) as ic_fraction, 
+				round(avg(QS.suggestedTime)) as avgSuggestedTime, 
+				round(avg(QS.c_avgTime)) as c_avgTime, 
+				round(avg(QS.a_avgTime)) as a_avgTime
+				
+from QuestionStatistics QS, Question Q, Chapter C, Unit U, Subject S
+where QS.id = Q.id and Q.chapterId = C.id and C.unitId = U.id and U.subjectId = S.id
+group by S.id;
+
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  Question Statistics - Unit  ***
+
+select U.id, count(QS.id) as numberOfQuestions,
+				sum(QS.count_total) as numberOfStudents, 
+				sum(QS.count_correct) as c_numberStudents,
+				sum(QS.count_incorrect) as ic_numberStudents,
+				round(avg(QS.count_correct/QS.count_total) * 100) as c_fraction, 
+				round(avg(QS.count_incorrect/QS.count_total) * 100) as ic_fraction, 
+				round(avg(QS.suggestedTime)) as avgSuggestedTime, 
+				round(avg(QS.c_avgTime)) as c_avgTime, 
+				round(avg(QS.a_avgTime)) as a_avgTime
+				
+from QuestionStatistics QS, Question Q, Chapter C, Unit U
+where QS.id = Q.id and Q.chapterId = C.id and C.unitId = U.id
+group by U.id;
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  Question Statistics - Chapter  ***
+
+select C.id, count(QS.id) as numberOfQuestions,
+				sum(QS.count_total) as numberOfStudents, 
+				sum(QS.count_correct) as c_numberStudents,
+				sum(QS.count_incorrect) as ic_numberStudents,
+				round(avg(QS.count_correct/QS.count_total) * 100) as c_fraction, 
+				round(avg(QS.count_incorrect/QS.count_total) * 100) as ic_fraction, 
+				round(avg(QS.suggestedTime)) as avgSuggestedTime, 
+				round(avg(QS.c_avgTime)) as c_avgTime, 
+				round(avg(QS.a_avgTime)) as a_avgTime
+				
+from QuestionStatistics QS, Question Q, Chapter C
+where QS.id = Q.id and Q.chapterId = C.id
+group by C.id;
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  Question Statistics  ***
+
+select QS.id, QS.count_total, 
+				QS.count_correct, 
+				QS.count_incorrect,
+				round((QS.count_correct/QS.count_total)*100) as c_fraction, 
+				round((QS.count_incorrect/QS.count_total)*100) as ic_fraction, 
+				QS.suggestedTime, 
+				round(QS.c_avgTime) as c_avgTime, 
+				round(QS.a_avgTime) as a_avgTime
+				
+from QuestionStatistics QS;
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  COMPLETE student statistics  ***
+
+select R.studentId, R.questionId, R.result, R.takenTime,
+		AQ.count_total, AQ.count_correct, AQ.count_incorrect,
+		AQ.suggestedTime,
+		AQ.c_avgTime, AQ.c_minTime, AQ.c_maxTime,
+		AQ.a_avgTime, AQ.a_minTime, AQ.a_maxTime
+
+from
+
+  (
+  select distinct Q.id as questionId,
+	
+	(
+	select count(*)
+	from AnsweredQuestion A1
+	where A1.questionId = Q.id
+	)as count_total,
+
+	(
+	select count(*)
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and (A2.studentId, A2.questionId) in 
+			(
+			select A1.studentId, A1.questionId
+			from AnsweredQuestion A1, Question Q1
+			where A1.questionId = Q1.id
+					and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+					and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+					and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+					and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+					and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+			)
+	)as count_correct,
+
+	(
+	select count(*)
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and (A2.studentId, A2.questionId) not in 
+			(
+			select A1.studentId, A1.questionId
+			from AnsweredQuestion A1, Question Q1
+			where A1.questionId = Q1.id
+					and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+					and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+					and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+					and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+					and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+			)
+	)as count_incorrect,
+
+	Q.suggestedTime,
+	R1.c_avgTime, R1.c_minTime, R1.c_maxTime,
+	R2.a_avgTime, R2.a_minTime, R2.a_maxTime
+
+
+  from Question Q,
+
+	(
+	select A2.questionId, avg(A2.takenTime) as c_avgTime, min(A2.takenTime) as c_minTime, max(A2.takenTime) as c_maxTime
+	from AnsweredQuestion A2, Question Q2
+	where
+			(A2.studentId, A2.questionId) in 
+				(
+					select A1.studentId, A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+			and Q2.id = A2.questionId
+	group by A2.questionId
+
+	UNION
+
+	select Q2.id as questionId, 0 as c_avgTime, 0 as c_minTime, 0 as c_maxTime
+	from Question Q2
+	where Q2.id not in 
+				(
+					select A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+		
+	)as R1,
+
+	(
+	select A1.questionId, avg(A1.takenTime) as a_avgTime, min(A1.takenTime) as a_minTime, max(A1.takenTime) as a_maxTime
+	from AnsweredQuestion A1, Question Q1
+	where
+			Q1.id in
+					(
+					select A1.questionId
+					from AnsweredQuestion A1
+					where A1.questionId = Q1.id
+					)
+			and Q1.id = A1.questionId
+	group by A1.questionId
+
+	UNION
+
+	select Q1.id as questionId, 0 as a_avgTime, 0 as a_minTime, 0 as a_maxTime
+	from Question Q1
+	where Q1.id not in 
+		(
+		select A1.questionId
+		from AnsweredQuestion A1
+		where A1.questionId = Q1.id
+		)
+		
+	)as R2
+
+  where Q.id = R1.questionId and Q.id = R2.questionId
+  ) as AQ,
+  
+  (
+  select A2.studentId, A2.questionId, 'CORRECT' as result, A2.takenTime
+  from AnsweredQuestion A2
+  where (A2.studentId, A2.questionId) in 
+				(
+					select A1.studentId, A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+				
+	UNION
+	
+  select A2.studentId, A2.questionId, 'INCORRECT' as result, A2.takenTime
+  from AnsweredQuestion A2
+  where (A2.studentId, A2.questionId) not in 
+				(
+					select A1.studentId, A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+  ) as R
+
+where R.studentId = 'BASE12S1016' and R.questionId = AQ.questionId
+order by R.questionId;
+
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+***  COMPLETE questions statistics  ***
+
+select distinct Q.id,
+	
+	(
+	select count(*)
+	from AnsweredQuestion A1
+	where A1.questionId = Q.id
+	)as count_total,
+
+	(
+	select count(*)
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and (A2.studentId, A2.questionId) in 
+			(
+			select A1.studentId, A1.questionId
+			from AnsweredQuestion A1, Question Q1
+			where A1.questionId = Q1.id
+					and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+					and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+					and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+					and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+					and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+			)
+	)as count_correct,
+
+	(
+	select count(*)
+	from AnsweredQuestion A2
+	where A2.questionId = Q.id and (A2.studentId, A2.questionId) not in 
+			(
+			select A1.studentId, A1.questionId
+			from AnsweredQuestion A1, Question Q1
+			where A1.questionId = Q1.id
+					and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+					and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+					and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+					and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+					and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+			)
+	)as count_incorrect,
+
+	Q.suggestedTime,
+	R1.c_avgTime, R1.c_minTime, R1.c_maxTime,
+	R2.a_avgTime, R2.a_minTime, R2.a_maxTime
+
+
+from Question Q,
+
+	(
+	select A2.questionId, avg(A2.takenTime) as c_avgTime, min(A2.takenTime) as c_minTime, max(A2.takenTime) as c_maxTime
+	from AnsweredQuestion A2, Question Q2
+	where
+			(A2.studentId, A2.questionId) in 
+				(
+					select A1.studentId, A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+			and Q2.id = A2.questionId
+	group by A2.questionId
+
+	UNION
+
+	select Q2.id as questionId, 0 as c_avgTime, 0 as c_minTime, 0 as c_maxTime
+	from Question Q2
+	where Q2.id not in 
+				(
+					select A1.questionId
+					from AnsweredQuestion A1, Question Q1
+					where A1.questionId = Q1.id
+							and ((Q1.answerText_1 is null) or (A1.answerText_1 = Q1.answerText_1))
+							and ((Q1.answerText_2 is null) or (A1.answerText_2 = Q1.answerText_2))
+							and ((Q1.answerText_3 is null) or (A1.answerText_3 = Q1.answerText_3))
+							and ((Q1.answerText_4 is null) or (A1.answerText_4 = Q1.answerText_4))
+							and ((Q1.answerText_5 is null) or (A1.answerText_5 = Q1.answerText_5))
+				)
+		
+	)as R1,
+
+	(
+	select A1.questionId, avg(A1.takenTime) as a_avgTime, min(A1.takenTime) as a_minTime, max(A1.takenTime) as a_maxTime
+	from AnsweredQuestion A1, Question Q1
+	where
+			Q1.id in
+					(
+					select A1.questionId
+					from AnsweredQuestion A1
+					where A1.questionId = Q1.id
+					)
+			and Q1.id = A1.questionId
+	group by A1.questionId
+
+	UNION
+
+	select Q1.id as questionId, 0 as a_avgTime, 0 as a_minTime, 0 as a_maxTime
+	from Question Q1
+	where Q1.id not in 
+		(
+		select A1.questionId
+		from AnsweredQuestion A1
+		where A1.questionId = Q1.id
+		)
+		
+	)as R2
+
+where Q.id = R1.questionId and Q.id = R2.questionId
+order by id;
