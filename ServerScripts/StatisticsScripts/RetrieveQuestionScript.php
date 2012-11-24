@@ -53,7 +53,7 @@
             
             
             echo "<div id=\"div_unitsAjaxFiller\" style=\"float: right; position:relative; left:0px; white-space:pre;overflow:auto;width:50%;padding:10px;\">
-                        Placeholder for Units Table";                  
+                        <b>Chapter Statistics</b>";                  
             echo "<table id=\"table_chapterStatistics\" border='1' style=\"\">";
             echo "<thead>";
             echo "<tr>";
@@ -114,13 +114,13 @@
 
 
 <script type="text/javascript">        
-    $("#table_chapterStatistics").dataTable({
+    /*$("#table_chapterStatistics").dataTable({
         "sScrollX": "50%",
 		"sScrollXInner": "110%",
 		"bScrollCollapse": true       
     });   
     $("#table_chapterStatistics_previous").button();
-    $("#table_chapterStatistics_next").button();   
+    $("#table_chapterStatistics_next").button(); */  
 </script>
 
 

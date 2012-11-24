@@ -39,16 +39,16 @@
             $result = $this->getSubjectTuples();
             $numRows = mysql_num_rows($result);         
             
-            $attributes = array("Subject_ID", "Subject_Name");
+            //$attributes = array("Subject_ID", "Subject_Name");
+            $attributes = array("Select Subject");
             
             
             echo "<div style=\"float: left;\">";
-            echo "<table id=\"table_subjects\" border='1' style=\"text-align: center;\">";
+            echo "<table id=\"table_subjects\" border='0' style=\"float: right;\">";
             echo "<thead>";
             echo "<tr>";
             for($i = 0; $i < count($attributes); $i++)
-                echo "<th>" . $attributes[$i] . "</th>";
-            echo "<th>Click Me!</th>";                      //To be removed later
+                echo "<th>" . $attributes[$i] . "</th>";            
             echo "</tr>";
             echo "</thead>";
             
@@ -63,12 +63,8 @@
                     echo "<td>" . $value . "</td>";
               }
               else
-              {
-                for($i = 0; $i < count($attributes); $i++)
-                {
-                     echo "<td>" . $row[$i]. "</td>";                     
-                }
-                echo "<td><input type=\"button\" id=\"button_{$row[0]}\" value=\"Select\"/></td>";
+              {        
+                echo "<td style=\"\"><input type=\"button\" id=\"button_{$row[0]}\" value=\"{$row[1]}\"/></td>";
                 echo "<script type=\"text/javascript\">  
                         $(\"#button_{$row[0]}\").button().click(function(){
                                 $(\"#p_feedback\").text(\"Subject Selected --> \" + this.id.substring(7));
@@ -80,7 +76,29 @@
                                 $(\"#div_subjectAjaxFiller\").load(\"./ServerScripts/StatisticsScripts/RetrieveUnitScript.php\", 
                                     {
                                         \"subjectID\" : $(\"#hidden_subjectID\").val()            
-                                    });   
+                                    });     
+                                                              
+                                
+                                $(\"#label_path\").show();                               
+                                $(\"#button_backSubject\").show();                      
+                                $(\"#button_backSubject\").button().click(function(){       
+                                    
+                                    $(\"#div_subjectAjaxFiller\").empty(); 
+                                                                        
+                                    var tabIndex = \"#hidden_courseID\" + $(\"#hidden_courseTabIndex\").val().toString();                                                                        
+                                    $(\"#div_subjectAjaxFiller\").load(\"./ServerScripts/StatisticsScripts/RetrieveSubjectScript.php\", 
+                                        {                                            
+                                            \"courseID\": $(tabIndex).val()           
+                                        });  
+                                        
+                                     $(\"#p_feedback\").text(\"Course Selected --> \" + $(tabIndex).val());  
+                                     $(\"#label_path\").hide();   
+                                     $(\"#button_backSubject\").hide(); 
+                                     $(\"#button_backUnit\").hide();
+                                     $(\"#button_backChapter\").hide();  
+                                                                       
+                                });                             
+                                
                             });; 
                       </script>";
               }          
@@ -121,7 +139,7 @@
             
             
             echo "<div id=\"div_unitsAjaxFiller\" style=\"float: right; position:relative; left:0px; white-space:pre;overflow:auto;width:50%;padding:10px;\">
-                        Placeholder for Units Table";                  
+                        <b>Course Statistics</b>";                  
             echo "<table id=\"table_courseStatistics\" border='1' style=\"\">";
             echo "<thead>";
             echo "<tr>";
@@ -182,17 +200,24 @@
 
 
 <script type="text/javascript">    
-    $("#table_subjects").dataTable();
+    var rowCount = $('#table_subjects tr').length;
+    if(rowCount < 10)
+        $("#table_subjects").dataTable({"bInfo": false, "bPaginate": false});
+    else
+        $("#table_subjects").dataTable();
+        
     $("#table_subjects_previous").button();
     $("#table_subjects_next").button();
     
-    $("#table_courseStatistics").dataTable({
+    /*$("#table_courseStatistics").dataTable({
         "sScrollX": "50%",
 		"sScrollXInner": "110%",
 		"bScrollCollapse": true       
     });   
     $("#table_courseStatistics_previous").button();
-    $("#table_courseStatistics_next").button();   
+    $("#table_courseStatistics_next").button();*/   
+       
+    
 </script>
 
 

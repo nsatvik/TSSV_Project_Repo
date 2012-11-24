@@ -59,13 +59,16 @@
                     echo "<input type=\"hidden\" id=\"hidden_courseID$i\" value=\"{$row[0]}\" />";
                 }
                 
+                echo "<input type=\"hidden\" id=\"hidden_courseTabIndex\" value=\"0\" />";
+                
                 echo "<div id=\"div_subjectAjaxFiller\" style=\"float: left; width=75%\">
                         Placeholder for Subjects
                     </div>";
                     
                 $this->initHiddenElements();
-                
-                $this->addBreaks(30);
+                $this->addBreaks(18);
+                $this->initBackButton(); 
+                $this->addBreaks(5);
             echo "</div>";
         }
         
@@ -81,6 +84,17 @@
             echo "<input type=\"hidden\" id=\"hidden_unitID\" value=\"null\" />";
             echo "<input type=\"hidden\" id=\"hidden_chapterID\" value=\"null\" />";
         }
+        
+        function initBackButton()
+        {
+            echo "<div id=\"div_goBack\">";
+            echo "<label id=\"label_path\">Select Different ---> </label>";
+            //echo "<input type=\"button\" id=\"button_back\" value=\"Back\"/>";
+            echo "<input type=\"button\" id=\"button_backSubject\" value=\"Subject\"/>";
+            echo "<input type=\"button\" id=\"button_backUnit\" value=\"Unit\"/>";
+            echo "<input type=\"button\" id=\"button_backChapter\" value=\"Chapter\"/>";
+            echo "</div>";            
+        }
     }
 ?>
 
@@ -89,19 +103,19 @@
 <?php	
 	$form = new FormValues();    
     $form->displayValues();   
-    $form->constructTable();
-    
+    $form->constructTable();    
 ?>
 
 <script type="text/javascript">    
     function handleSelect(event, tab) {
-        $("#div_subjectAjaxFiller").text("The tab at index " + tab.index + " was selected")                  
+        $("#hidden_courseTabIndex").val(tab.index);
+        
+        $("#div_subjectAjaxFiller").text("The tab at index " + tab.index + " was selected");                
         
         $("#div_subjectAjaxFiller").load("./ServerScripts/StatisticsScripts/RetrieveSubjectScript.php", 
             {
                 "courseID" : $("#hidden_courseID" + tab.index).val()            
-            });     
-        
+            });       
     }  
     var tabOpts = {
         select:handleSelect
@@ -115,6 +129,13 @@
                 "courseID" : $("#hidden_courseID" + 0).val()            
             }); 
 
+    
+    $("#label_path").hide();
+    $("#button_backSubject").hide();
+    $("#button_backUnit").hide();
+    $("#button_backChapter").hide();
+
+    
 </script>
 
 

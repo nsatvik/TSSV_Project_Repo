@@ -40,16 +40,16 @@
             $result = $this->getChapterTuples();
             $numRows = mysql_num_rows($result);         
             
-            $attributes = array("Chapter_ID", "Chapter_Name");
+            //$attributes = array("Chapter_ID", "Chapter_Name");
+            $attributes = array("Select Chapter");
             
             
             echo "<div style=\"float: left;\">";
-            echo "<table id=\"table_chapters\" border='1' style=\"text-align: center;\">";
+            echo "<table id=\"table_chapters\" border='0' style=\"float: right;\">";
             echo "<thead>";
             echo "<tr>";
             for($i = 0; $i < count($attributes); $i++)
-                echo "<th>" . $attributes[$i] . "</th>";
-            echo "<th>Click Me!</th>";                      //To be removed later
+                echo "<th>" . $attributes[$i] . "</th>";            
             echo "</tr>";
             echo "</thead>";
             
@@ -65,11 +65,7 @@
               }
               else
               {
-                for($i = 0; $i < count($attributes); $i++)
-                {
-                     echo "<td>" . $row[$i]. "</td>";                     
-                }
-                echo "<td><input type=\"button\" id=\"button_{$row[0]}\" value=\"Select\"/></td>";
+                echo "<td><input type=\"button\" id=\"button_{$row[0]}\" value=\"{$row[1]}\"/></td>";
                 echo "<script type=\"text/javascript\">  
                         $(\"#button_{$row[0]}\").button().click(function(){
                                 $(\"#p_feedback\").text(\"Chapter Selected --> \" + this.id.substring(7));
@@ -82,6 +78,18 @@
                                     {
                                         \"chapterID\" : $(\"#hidden_chapterID\").val()            
                                     });
+                                 
+                                $(\"#button_backChapter\").show(); 
+                                $(\"#button_backChapter\").button().click(function(){
+                                        $(\"#div_subjectAjaxFiller\").empty();
+                                        $(\"#div_subjectAjaxFiller\").load(\"./ServerScripts/StatisticsScripts/RetrieveChapterScript.php\", 
+                                            {
+                                                \"unitID\" : $(\"#hidden_unitID\").val()            
+                                            });
+                                            
+                                        $(\"#p_feedback\").text(\"Unit Selected --> \" + $(\"#hidden_unitID\").val());
+                                        $(\"#button_backChapter\").hide();
+                                    });                     
                                 
                             });; 
                       </script>";
@@ -122,7 +130,7 @@
             
             
             echo "<div id=\"div_unitsAjaxFiller\" style=\"float: right; position:relative; left:0px; white-space:pre;overflow:auto;width:50%;padding:10px;\">
-                        Placeholder for Units Table";                  
+                        <b>Unit Statistics</b>";                  
             echo "<table id=\"table_unitStatistics\" border='1' style=\"\">";
             echo "<thead>";
             echo "<tr>";
@@ -183,17 +191,23 @@
 
 
 <script type="text/javascript">    
-    $("#table_chapters").dataTable();
-    $("#table_chapters_previous").button();
-    $("#table_chapters_next").button();
-    
-    $("#table_unitStatistics").dataTable({
+    var rowCount = $('#table_chapters tr').length;
+    if(rowCount < 10)
+        $("#table_chapters").dataTable({"bInfo": false, "bPaginate": false});
+    else
+    {
+        $("#table_chapters").dataTable();
+        $("#table_chapters_previous").button();
+        $("#table_chapters_next").button();
+    }
+          
+    /*$("#table_unitStatistics").dataTable({
         "sScrollX": "50%",
 		"sScrollXInner": "110%",
 		"bScrollCollapse": true       
     });   
     $("#table_unitStatistics_previous").button();
-    $("#table_unitStatistics_next").button();   
+    $("#table_unitStatistics_next").button();*/   
 </script>
 
 
